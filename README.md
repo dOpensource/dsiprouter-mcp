@@ -15,9 +15,14 @@ Here are some example questions you can ask the AI assistant when using this MCP
 - Create a CSV file with all of the calls that happened yesterday
 - List all inbound numbers
 
-        Here's a screenshoot of the result
+    Here's a screenshoot from Claude when asking to "list all inbound numbers"
 
-        ![alt text](docs/images/image.png)
+    ![alt text](./docs/images/image.png)
+
+## Requirements
+
+- [dSIPRouter](https://dsiprouter.org/) 0.70 or later
+- [dSIPRouter Core License](https://dopensource.com/product/dsiprouter-core-subscription-with-stirshaken/) - Contains a 7 Day Trial License
 
 ## Setup
 
@@ -72,7 +77,9 @@ nano ~/Library/Application\ Support/Claude/claude_desktop_config.json
 }
 ```
 
-The API Token is also displayed after an install of dSIPRouter.  Their is no way to obtain your token if you didn't store it.  You can reset your dSIPRouter API Token by running this command on your dSIPRouter Server. 
+The API Token is displayed after the initial install of dSIPRouter.  Their is no way to obtain your token if you didn't store it.  You can reset your dSIPRouter API Token by running this command on your dSIPRouter Server.
+
+If you don't have a valid SSL certificate then set DSIP_VERIFY_SSL as false
 
 ```bash
 dsiprouter setcredentials -ac YOUR_TOKEN
