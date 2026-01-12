@@ -89,8 +89,8 @@ class DSIPRouterClient:
     async def update_inbound_mapping(self, ruleid: int, data: dict) -> dict[str, Any]:
         return await self._request("PUT", f"/inboundmapping/{ruleid}", json_data=data)
     
-    async def delete_inbound_mapping(self, ruleid: int) -> dict[str, Any]:
-        return await self._request("DELETE", f"/inboundmapping/{ruleid}")
+    async def delete_inbound_mapping(self, did: str) -> dict[str, Any]:
+        return await self._request("DELETE", "/inboundmapping", params={"did": did})
 
     async def get_cdrs_by_endpoint_group(self, endpointgroup: str) -> dict[str, Any]:
         return await self._request("GET", f"/cdrs/endpointgroups/{endpointgroup}")

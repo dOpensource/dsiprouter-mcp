@@ -26,7 +26,8 @@ Here are some example questions you can ask the AI assistant when using this MCP
 
 ## Setup
 
-### Validate that the MCP Server is Working
+### Using Python on Host Machine
+#### Validate that the MCP Server is Working 
 
 1. Install dependencies:
    ```bash
@@ -51,9 +52,9 @@ Here are some example questions you can ask the AI assistant when using this MCP
 
  5. Configure the MCP Server for one or more conversation AI chatbots per the sections below.
 
- ### Configure Claude
+ #### Configure Claude
 
- ### On MacOS
+ ##### On MacOS
 
 1.  Open Claude Configuration File:
 ```bash
@@ -77,15 +78,87 @@ nano ~/Library/Application\ Support/Claude/claude_desktop_config.json
 }
 ```
 
-The API Token is displayed after the initial install of dSIPRouter.  Their is no way to obtain your token if you didn't store it.  You can reset your dSIPRouter API Token by running this command on your dSIPRouter Server.
-
-If you don't have a valid SSL certificate then set DSIP_VERIFY_SSL as false
-
-```bash
-dsiprouter setcredentials -ac YOUR_TOKEN
-```
 
 3. Save the file
 
 4. Start Claude
 
+### Using Python using Virtual Environment (venv)
+#### Validate that the MCP Server is Working 
+
+1. Install dependencies:
+   ```bash
+   python -m venv .venv
+   source ./.venv/bin/activate
+   pip install -r requirements.txt
+   ```
+
+2. Set environment variables:
+   - `DSIP_BASE_URL`: The base URL of your dSIPRouter instance
+   - `DSIP_TOKEN`: Your dSIPRouter API token
+   - `DSIP_VERIFY_SSL`: Whether to verify SSL certificates (default: true)
+
+   For example,
+   ```bash
+   export DSIP_BASE_URL=https://your url:5000
+   export DSIP_TOKEN=your token
+   export DSIP_VERIFY_SSL=true
+   ```
+
+3. Run the server:
+   ```bash
+   python main.py
+   ```
+
+   Note: You will not see any output if it's running successfully
+
+ 4. Stop the Server:
+
+    Hit Ctrl-C twice to kill the server
+
+ 5. Configure the MCP Server for one or more conversation AI chatbots per the sections below.
+
+ #### Configure Claude
+
+ ##### On MacOS
+
+1.  Open Claude Configuration File:
+```bash
+nano ~/Library/Application\ Support/Claude/claude_desktop_config.json
+ ```
+
+2. Add the following:
+```
+{
+  "mcpServers": {
+    "dsiprouter": {
+      "command": "<your path>/dsiprouter-mcp-server/.venv/bin/python3",
+      "args": ["<your path>/code/dsiprouter-mcp-server/main.py"],
+      "env": {
+        "DSIP_BASE_URL": "https://your-dsiprouter-server:5000",
+        "DSIP_TOKEN": "your-dsiprouter-api-token",
+        "DSIP_VERIFY_SSL": "true"
+      }
+    }
+  }
+}
+```
+
+
+3. Save the file
+
+4. Start Claude
+
+## Other Info
+
+### dSIPRouter API Token
+
+The dSIPRouter API Token is displayed after the initial install of dSIPRouter.  Their is no way to obtain your token if you didn't store it.  You can reset your dSIPRouter API Token by running this command on your dSIPRouter Server.
+
+```bash
+dsiprouter setcredentials -ac YOUR_TOKEN
+```
+
+### No valid dSIPRouter SSL Cert
+
+If you don't have a valid SSL certificate then set DSIP_VERIFY_SSL as false

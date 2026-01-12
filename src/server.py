@@ -1,8 +1,11 @@
 import os
 import json
 import logging
+from typing import Any, Dict, List
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 from src.dsiprouter_client import DSIPRouterClient
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -11,7 +14,23 @@ DSIP_BASE_URL = os.environ.get("DSIP_BASE_URL", "https://localhost:5000")
 DSIP_TOKEN = os.environ.get("DSIP_TOKEN", "")
 DSIP_VERIFY_SSL = os.environ.get("DSIP_VERIFY_SSL", "true").lower() == "true"
 
-mcp = FastMCP("dsiprouter-mcp")
+def _split_env_list(value: str | None) -> List[str]:
+    if not value:
+        return []
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+def _transport_security_settings() -> TransportSecuritySettings:
+    allowed_hosts = _split_env_list(os.getenv("MCP_ALLOWED_HOSTS"))
+    allowed_origins = _split_env_list(os.getenv("MCP_ALLOWED_ORIGINS"))
+    if not allowed_hosts and not allowed_origins:
+        return TransportSecuritySettings(enable_dns_rebinding_protection=False)
+    return TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=allowed_hosts,
+        allowed_origins=allowed_origins,
+    )
+
+mcp = FastMCP("dsiprouter-mcp",stateless_http=True,transport_security=_transport_security_settings(),)
 
 def get_client() -> DSIPRouterClient:
     if not DSIP_TOKEN:
@@ -304,7 +323,7 @@ async def create_inbound_mapping(did: str, groupid: int) -> str:
     client = get_client()
     data = {
         "did": did,
-        "groupid": groupid
+        "servers": "#" + [str(groupid)]
     }
     result = await client.create_inbound_mapping(data)
     return json.dumps(result, indent=2)
@@ -325,21 +344,21 @@ async def update_inbound_mapping(ruleid: int, did: str = "", groupid: int = -1) 
     if did:
         data["did"] = did
     if groupid >= 0:
-        data["groupid"] = groupid
+        data["servers"] = "#"[str(groupid)]
     result = await client.update_inbound_mapping(ruleid, data)
     return json.dumps(result, indent=2)
 
 
 @mcp.tool()
-async def delete_inbound_mapping(ruleid: int) -> str:
+async def delete_inbound_mapping(did: str) -> str:
     """
     Delete an inbound mapping from dSIPRouter.
     
     Args:
-        ruleid: The rule ID of the inbound mapping to delete
+        did: The DID (phone number) of the inbound mapping to delete
     """
     client = get_client()
-    result = await client.delete_inbound_mapping(ruleid)
+    result = await client.delete_inbound_mapping(did)
     return json.dumps(result, indent=2)
 
 
