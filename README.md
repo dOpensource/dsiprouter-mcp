@@ -24,7 +24,7 @@ Here are some example questions you can ask the AI assistant when using this MCP
 - [dSIPRouter](https://dsiprouter.org/) 0.70 or later
 - [dSIPRouter Core License](https://dopensource.com/product/dsiprouter-core-subscription-with-stirshaken/) - Contains a 7 Day Trial License
 
-## Setup
+## Setup for Claude Desktop
 
 ### Using Python on Host Machine
 #### Validate that the MCP Server is Working 
@@ -148,6 +148,51 @@ nano ~/Library/Application\ Support/Claude/claude_desktop_config.json
 3. Save the file
 
 4. Start Claude
+
+
+## Setup for ChatGPT
+
+### Using Python on Host Machine
+#### Start the MCP Server in HTTP Mode
+
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. Set environment variables:
+   - `DSIP_BASE_URL`: The base URL of your dSIPRouter instance
+   - `DSIP_TOKEN`: Your dSIPRouter API token
+   - `DSIP_VERIFY_SSL`: Whether to verify SSL certificates (default: true)
+
+3. Run the server:
+   ```bash
+   python main.py --http
+   ```
+  If you are running this on a machine with an external ip address with access to port 8000 then skipp to the next section on setting up ChatGPT
+
+4. Expose the local server using ngrok
+
+Open up another terminal, download ngrok, register with ngrok and start ngrok
+
+```bash
+ngrok http 8000
+```
+
+### Setting up ChatGPT to use the dSIPRouter MCP Server
+
+1. Login to ChatGPT
+2. Click Settings, then Apps
+3. Enable Developer Mode
+4. Click Create App
+5. Enter in the basic info and for the MCP Server URL enter the ngrok external ip address and add /mcp to the end of it.  Note, select No-Authentication.  The screen should look like this
+
+![alt text](/docs/images/chatgpt_custom_app_setup.png)
+
+6. Click Create
+7. Start a new chat and ask it a question like "list all carrier groups in dsiprouter". You will get a response like this
+
+![alt text](/docs/images/list_of_carrier_results.png)
 
 ## Other Info
 

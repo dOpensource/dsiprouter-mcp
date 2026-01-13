@@ -312,18 +312,23 @@ async def get_inbound_mapping(ruleid: int) -> str:
 
 
 @mcp.tool()
-async def create_inbound_mapping(did: str, groupid: int) -> str:
+async def create_inbound_mapping(did: str, groupid: int, name: str) -> str:
     """
     Create a new inbound DID mapping in dSIPRouter.
     
     Args:
         did: The DID (phone number) to route
         groupid: The endpoint group ID to route calls to
+        name: The Name for the inbound mapping (optional)
     """
+    if name == "":
+        name = f"Inbound Mapping for {did}"
+    if type(groupid) == int:
+        groupid = "#" + str(groupid)
     client = get_client()
     data = {
         "did": did,
-        "servers": "#" + [str(groupid)]
+        "servers": [str(groupid)]
     }
     result = await client.create_inbound_mapping(data)
     return json.dumps(result, indent=2)
@@ -341,10 +346,13 @@ async def update_inbound_mapping(ruleid: int, did: str = "", groupid: int = -1) 
     """
     client = get_client()
     data = {}
+
+    if type(groupid) == int:
+        groupid = "#" + str(groupid)
     if did:
         data["did"] = did
     if groupid >= 0:
-        data["servers"] = "#"[str(groupid)]
+        data["servers"] = [str(groupid)]
     result = await client.update_inbound_mapping(ruleid, data)
     return json.dumps(result, indent=2)
 
