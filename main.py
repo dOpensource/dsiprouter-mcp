@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import argparse
-from src.server import mcp
+from src.server import mcp, run_streamable_http_server
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="dSIPRouter MCP Server")
@@ -9,6 +9,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     if args.http:
-        mcp.run(transport="streamable-http")
+        run_streamable_http_server()
     else:
         mcp.run()

@@ -13,6 +13,26 @@ logger = logging.getLogger(__name__)
 DSIP_BASE_URL = os.environ.get("DSIP_BASE_URL", "https://localhost:5000")
 DSIP_TOKEN = os.environ.get("DSIP_TOKEN", "")
 DSIP_VERIFY_SSL = os.environ.get("DSIP_VERIFY_SSL", "true").lower() == "true"
+DSIPMCP_HOST = "0.0.0.0"
+
+
+def _get_dsipmcp_port() -> int:
+    value = os.environ.get("DSIPMCP_PORT", "443")
+    try:
+        port = int(value)
+    except ValueError:
+        logger.warning("Invalid DSIPMCP_PORT '%s'; defaulting to 443", value)
+        return 443
+    if port < 1 or port > 65535:
+        logger.warning("Out-of-range DSIPMCP_PORT '%s'; defaulting to 443", value)
+        return 443
+    return port
+
+
+DSIPMCP_PORT = _get_dsipmcp_port()
+DSIPMCP_CERT = os.environ.get("DSIPMCP_CERT", "")
+DSIPMCP_KEY = os.environ.get("DSIPMCP_KEY", "")
+DSIPMCP_CA = os.environ.get("DSIPMCP_CA", "")
 
 def _split_env_list(value: str | None) -> List[str]:
     if not value:
@@ -30,7 +50,34 @@ def _transport_security_settings() -> TransportSecuritySettings:
         allowed_origins=allowed_origins,
     )
 
-mcp = FastMCP("dsiprouter-mcp",stateless_http=True,transport_security=_transport_security_settings(),)
+mcp = FastMCP(
+    "dsiprouter-mcp",
+    host=DSIPMCP_HOST,
+    port=DSIPMCP_PORT,
+    stateless_http=True,
+    transport_security=_transport_security_settings(),
+)
+
+
+def run_streamable_http_server() -> None:
+    """Run Streamable HTTP server with optional TLS from DSIPMCP_* env vars."""
+    import uvicorn
+
+    uvicorn_config: Dict[str, Any] = {
+        "host": DSIPMCP_HOST,
+        "port": DSIPMCP_PORT,
+        "log_level": mcp.settings.log_level.lower(),
+    }
+
+    if DSIPMCP_CERT or DSIPMCP_KEY or DSIPMCP_CA:
+        if not DSIPMCP_CERT or not DSIPMCP_KEY:
+            raise ValueError("Both DSIPMCP_CERT and DSIPMCP_KEY are required when enabling TLS")
+        uvicorn_config["ssl_certfile"] = DSIPMCP_CERT
+        uvicorn_config["ssl_keyfile"] = DSIPMCP_KEY
+        if DSIPMCP_CA:
+            uvicorn_config["ssl_ca_certs"] = DSIPMCP_CA
+
+    uvicorn.run(mcp.streamable_http_app(), **uvicorn_config)
 
 def get_client() -> DSIPRouterClient:
     if not DSIP_TOKEN:
@@ -414,4 +461,4 @@ After creating the endpoint group, remember to reload Kamailio to apply the chan
 
 
 if __name__ == "__main__":
-    mcp.run()
+    run_streamable_http_server()
