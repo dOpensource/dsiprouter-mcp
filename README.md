@@ -38,10 +38,14 @@ Here are some example questions you can ask the AI assistant when using this MCP
    - `DSIP_BASE_URL`: The base URL of your dSIPRouter instance
    - `DSIP_TOKEN`: Your dSIPRouter API token
    - `DSIP_VERIFY_SSL`: Whether to verify SSL certificates (default: true)
+   - `DSIPMCP_CERT`: File location of the certificate
+   - `DSIPMCP_KEY`: File location of the key 
+   - `DSIPMCP_CA`: File location of the CA 
+   - `DSIPMCP_PORT`: Define the port being used.  The default is 443
 
 3. Run the server:
    ```bash
-   python main.py
+   python main.py --http
    ```
 
    Note: You will not see any output if it's running successfully
@@ -53,6 +57,8 @@ Here are some example questions you can ask the AI assistant when using this MCP
  5. Configure the MCP Server for one or more conversation AI chatbots per the sections below.
 
  #### Configure Claude
+
+ Running the MCP Server on your local system
 
  ##### On MacOS
 
@@ -161,15 +167,27 @@ nano ~/Library/Application\ Support/Claude/claude_desktop_config.json
    ```
 
 2. Set environment variables:
+   - `DSIPMCP_CERT`: File location of the certificate
+   - `DSIPMCP_KEY`: File location of the key 
+   - `DSIPMCP_CA`: File location of the CA. Not required
+   - `DSIPMCP_PORT`: Define the port being used.  The default is 443
    - `DSIP_BASE_URL`: The base URL of your dSIPRouter instance
    - `DSIP_TOKEN`: Your dSIPRouter API token
    - `DSIP_VERIFY_SSL`: Whether to verify SSL certificates (default: true)
+   
+For example:
+```
+DSIPMCP_CERT=/etc/letsencrypt/live/demo-mcp.dsiprouter.net/fullchain.pem
+DSIPMCP_KEY=/etc/letsencrypt/live/demo-mcp.dsiprouter.net/privkey.pem
+DSIP_BASE_URL=https://demo.dsiprouter.net:5000
+DSIP_TOKEN=<dsiprouter token>
+```
 
 3. Run the server:
    ```bash
    python main.py --http
    ```
-  If you are running this on a machine with an external ip address with access to port 8000 then skipp to the next section on setting up ChatGPT
+  If you are running this on a machine without external ip address then set the DSIPMCP_PORT=8000 and restart the MCP Server.
 
 4. Expose the local server using ngrok
 
